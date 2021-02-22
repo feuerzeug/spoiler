@@ -46,24 +46,9 @@ class user(object):
         return self._name
 
 class series(object):
-    def __init__(self, name, episodes=None): # skim optional episodes param
-        if episodes is not None:
-            if type(episodes) != list:
-                raise TypeError("is not a list")
-            if len(episodes) == 0:
-                self._episode_list = []
-             
-            if type(episodes[0]) != episode:
-                raise TypeError("is no list of episodes")
-            else:
-                self._episode_list = episodes
-        else:
-            self._episode_list = []
+    def __init__(self, name): # skim optional episodes param
+        self._episode_list = []
         self._name = name
-        self._user_list = [] # not needed
-
-    def get_user_list(self): # not needed
-        return self._user_list
     
     def get_name(self):
         return self._name
@@ -71,12 +56,7 @@ class series(object):
     def get_episode_list(self):
         return self._episode_list
  
-    def add_user(self, user_instance): #maybe get rid off
-        if type(user_instance) != user:
-            raise TypeError("not a user")
-        if user_instance in self._user_list:
-            raise AssertionError("User " + user_instance + " is already in list")
-        self._user_list.append(user_instance)
+
 
     def add_episode(self, episode_instance):
         if type(episode_instance) != episode:
@@ -94,25 +74,24 @@ class series(object):
 
 # builds a test set of users, series and episodes
 def build_test_set(num_users=3128, num_series=204, num_episodes=24):
-    series_list = [] # maybe a set?
-    for i in range(0,num_series):
-        series_list.append(series('series'+str(i+1))) # delete other params from series constructor
-        for j in range(0,num_episodes):
-            series_list[i].add_episode(episode("episode"+str(j+1))) 
-
-    user_list = []
+    user_set = set()
     for i in range(0,num_users):
-        user_list.append(user('user'+str(i+1)))
-
-    for _series in series_list:
-        for _user in user_list:
+        user_set.add(user('user'+str(i+1)))
+    series_set = set()
+    for i in range(0,num_series):
+        series_ = series('series'+str(i+1))
+        for j in range(0,num_episodes):            
+            series_.add_episode(episode("episode"+str(j+1)))
+        series_set.add(series_)
+    for _series in series_set:
+        for _user in user_set:
             _user.add_series(_series)
-            _series.add_user(_user) # maybe skip
+            #_series.add_user(_user) # maybe skip
             _episode_list = _series.get_episode_list()
             _episode_list[random.randint(0,len(_episode_list)-1)].add_user(_user) # only name / id of user instead of object. we already rely on index dict for username -> user object
     #index = {u.get_name() : u for u in user_list}
     #return (user_list, series_list, index)
-    return (user_list, series_list)
+    return (user_set, series_set)
 
 # just to test, whether it is the randomness that takes so long, here is a function which just adds all users to the first episode of each series
 def build_test_set_norandom(num_users=3128, num_series=204, num_episodes=24):
