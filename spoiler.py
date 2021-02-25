@@ -115,38 +115,10 @@ def get_series_set_from_users(users):
             series_set.add(_series)
     return series_set
 
-# this function is quite fast. I tried to only do the neccessary operations. However, the returned list contains the series and we really do not need that
-def find_spoilers(lunchmates):
-    spoiler_list = []
-    series_set = get_series_set_from_users(lunchmates)
-    lunchmates_set = set(lunchmates)
-    for _series in series_set:
-        # find first (latest) episode with someone from the lunchmates-list
-        offset = 0
-        user_diffset = set()
-        spoilers = set()
-        _episode_list = _series.get_episode_list()
-        _episode_list.reverse()
-        for _episode in _episode_list:
-            offset = offset + 1 # keep in mind where we found the first users from lunchmates so we can later check the remainder of the episodes
-            _episode_user_set = _episode.get_user_set()
-            user_diffset = lunchmates_set.intersection(_episode_user_set)
-            if len(user_diffset) > 0:
-                #print(user_diffset)
-                spoilers = user_diffset
-                break
-        # check if earlier episodes contain users from the lunchmates-list
-        for _episode in _episode_list[offset:]:
-            _episode_user_set = _episode.get_user_set()
-            user_diffset = lunchmates_set.intersection(_episode_user_set)
-            # if yes, add the users from latest episode which are also in lunchmates-list to the spoiler list
-            if len(user_diffset) > 0:
-                spoiler_list.append((spoilers, _series))
-                break
-    return spoiler_list
+
 
 # this is the fastest one yet
-def find_spoilers_redux(lunchmates):
+def find_spoilers(lunchmates):
     spoiler_set = set()
     series_set = get_series_set_from_users(lunchmates)
     lunchmates_set = set(lunchmates)
@@ -188,29 +160,3 @@ def find_lunchmates(user_instance, series):
             return episode_users
     return []
 
-
-def find_user_by_name(name, user_list):
-    for _user in user_list:
-        if _user.get_name() == name:
-            return _user
-    return None
-
-
-# as it turns out, this runs for ages and should be handled differently
-def find_user_list_by_names(names, user_list):
-    user_list_result = set()
-    for name in names:
-        _user = find_user_by_name(name, user_list)
-        if _user is not None:
-            user_list_result.add(_user)
-        else:
-            raise AssertionError("can't find user with name \"%s\" in database", name)
-    return list(user_list_result)
-
-
-# helper function to test find_user-list_by_names()
-def name_list(user_list_):
-    name_list_ = []
-    for user_ in user_list_:
-        name_list_.append(user_.get_name())
-    return name_list_
